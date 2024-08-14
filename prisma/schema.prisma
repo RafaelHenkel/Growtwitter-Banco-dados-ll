@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Users{
+	id String @id @default(uuid()) @db.Uuid 
+	name String @db.VarChar(100) 
+	email String @unique 
+  username String @unique 
+  password String @db.VarChar(100) @unique 
+
+  tweets Tweets[]
+  likes Likes[]
+  replies Replies[]
+  following Follows[] @relation("following")//SEGUINDO
+  followers Follows[] @relation("followers")//SEGUIDORES
+	
+	createdAt DateTime @default(now()) @map("created_at") 
+	uptatedAt DateTime @updatedAt @map("updated_at") 
+	
+	@@map("users") 
+}
+
+enum TweetType {
+  T
+  R
+}
+
+model Tweets{
+  id String @id @default(uuid()) @db.Uuid 
+	content String @db.VarChar
+	tweetType TweetType @default(T) @map("tweet_type")
+
+  userId String @db.Uuid @map("user_id")
+  user Users @relation(fields: [userId], references: [id])
+
+  likes Likes[]
+  replies Replies[]
+
+  createdAt DateTime @default(now()) @map("created_at") 
+	uptatedAt DateTime @updatedAt @map("updated_at") 
+
+  @@map("tweets") 
+}
+
+model Likes{
+  id String @id @default(uuid()) @db.Uuid 
+
+  userId String @db.Uuid @map("user_id")
+  user Users @relation(fields: [userId], references: [id])
+
+  tweetId String @db.Uuid @map("tweets_id")
+  tweet Tweets @relation(fields: [tweetId], references: [id])
+
+  @@map("likes")
+}
+
+model Replies{
+   id String @id @default(uuid()) @db.Uuid 
+
+  userId String @db.Uuid @map("user_id")
+  user Users @relation(fields: [userId], references: [id])
+
+  tweetId String @db.Uuid @map("tweets_id")
+  tweet Tweets @relation(fields: [tweetId], references: [id])
+
+  @@map("replies")
+}
+
+model Follows{
+id String @id @default(uuid()) @db.Uuid 
+
+//SEGUINDO
+  userId String @db.Uuid @map("user_id")
+  user Users @relation(name: "following" ,fields: [userId], references: [id])
+
+
+//SEGUIDORES
+  followId String @db.Uuid @map("follow_id")
+  follow Users @relation(name: "followers", fields: [followId], references: [id])
+
+  @@map("follows")
+}
