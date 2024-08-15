@@ -14,7 +14,6 @@ class UserController {
           password: generateHash(password),
         },
       });
-      console.log(newUser);
 
       if (newUser) {
         return res.status(200).json({
