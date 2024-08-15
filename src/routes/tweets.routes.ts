@@ -6,10 +6,10 @@ const tweetsRoutes = () => {
   const router = Router();
   const controller = new TweetController();
 
-  router.get("/", authMiddleware, controller.list);
-  router.put("/:id", authMiddleware, controller.update);
-  router.post("/", authMiddleware, controller.create);
-  router.delete("/:id", authMiddleware, controller.delete);
+  router.get("/", authMiddleware, controller.list); // LISTAR TODOS OS TWEETS
+  router.put("/:id", authMiddleware, controller.update); // ATUALIZAR ALGUM TWEET
+  router.post("/", authMiddleware, controller.create); // CRIAR ALGUM TWEET
+  router.delete("/:id", authMiddleware, controller.delete); // DELETAR ALGUM TWEET
 
   return router;
 };

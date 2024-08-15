@@ -5,7 +5,7 @@ const loginRoutes = () => {
   const router = Router();
   const controller = new LoginController();
 
-  router.post("/", controller.create);
+  router.post("/", controller.create); // LOGAR EM ALGUMA CONTA
 
   return router;
 };

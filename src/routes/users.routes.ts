@@ -5,10 +5,10 @@ const userRoutes = () => {
   const router = Router();
   const controller = new UserController();
 
-  router.get("/", controller.list);
-  router.put("/:username", controller.update);
-  router.post("/", controller.create);
-  router.delete("/:username", controller.delete);
+  router.get("/", controller.list); // LISTAR TODOS OS USERS
+  router.put("/:username", controller.update); // ATUALIZAR ALGUM DADO DO USER
+  router.post("/", controller.create); // CRIAR UM NOVO USER
+  router.delete("/:username", controller.delete); // DELETAR ALGUM USER
 
   return router;
 };
