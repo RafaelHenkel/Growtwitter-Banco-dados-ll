@@ -21,6 +21,8 @@ model Users{
   username String @unique 
   password String @db.VarChar(100) @unique 
 
+  token String?
+
   tweets Tweets[]
   likes Likes[]
   replies Replies[]
