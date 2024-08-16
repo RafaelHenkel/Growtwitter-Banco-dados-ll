@@ -1,37 +1,67 @@
 import { Request, Response } from "express";
 import prisma from "../database/prisma.connections";
 
-class TweetController {
+class ReplyController {
   public async create(req: Request, res: Response) {
     const token = req.headers.authorization;
-    const { content } = req.body;
+    const { tweetId, referenceId } = req.body;
     try {
-      if (!content) {
+      if (!tweetId || !referenceId) {
         return res
           .status(400)
           .json({ success: false, msg: "Required fields." });
       }
+      const tweet = await prisma.tweets.findUnique({
+        where: {
+          id: tweetId,
+        },
+      });
+      if (!tweet) {
+        return res
+          .status(400)
+          .json({ success: false, msg: "Tweet reply not found." });
+      }
 
-      const findUser = await prisma.users.findFirst({
+      const reference = await prisma.tweets.findUnique({
+        where: {
+          id: referenceId,
+        },
+      });
+      if (!reference) {
+        return res
+          .status(400)
+          .json({ success: false, msg: "Tweet reference not found." });
+      }
+
+      const user = await prisma.users.findFirst({
         where: {
           token,
         },
       });
-      if (!findUser) {
+
+      if (!user) {
         return res.status(400).json({ success: false, msg: "User not found." });
       }
-
-      const tweet = await prisma.tweets.create({
+      await prisma.tweets.update({
+        where: {
+          id: tweetId,
+        },
         data: {
-          content,
-          userId: findUser.id,
+          tweetType: "R",
+        },
+      });
+      const reply = await prisma.replies.create({
+        data: {
+          userId: user?.id,
+          tweetId,
+          referenceId,
         },
       });
 
       return res.status(200).json({
         success: true,
-        msg: "Tweet created.",
-        data: tweet,
+        msg: "Retweet posted.",
+        data: reply,
       });
     } catch (error) {
       console.log(error);
@@ -41,60 +71,38 @@ class TweetController {
 
   public async list(req: Request, res: Response) {
     try {
-      const tweets = await prisma.tweets.findMany({
+      const replies = await prisma.replies.findMany({
         include: {
+          reference: {
+            select: {
+              content: true,
+              _count: {
+                select: {
+                  likes: true,
+                },
+              },
+            },
+          },
+          tweet: {
+            select: {
+              content: true,
+              _count: {
+                select: {
+                  likes: true,
+                },
+              },
+            },
+          },
           user: {
             select: {
               username: true,
             },
           },
-          _count: {
-            select: {
-              likes: true,
-            },
-          },
         },
       });
-
       return res
         .status(200)
-        .json({ success: true, msg: "List tweets.", data: tweets });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ success: false, msg: "ERROR Database." });
-    }
-  }
-
-  public async update(req: Request, res: Response) {
-    const { id } = req.params;
-    const { content } = req.body;
-
-    try {
-      const findTweet = await prisma.tweets.findUnique({
-        where: {
-          id,
-        },
-      });
-      if (!findTweet) {
-        return res
-          .status(400)
-          .json({ success: false, msg: "Tweet not found." });
-      }
-
-      const tweet = await prisma.tweets.update({
-        where: {
-          id,
-        },
-        data: {
-          content,
-        },
-      });
-
-      return res.status(200).json({
-        success: true,
-        msg: "Tweet updated.",
-        data: tweet,
-      });
+        .json({ success: true, msg: "List tweets.", data: replies });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ success: false, msg: "ERROR Database." });
@@ -103,12 +111,12 @@ class TweetController {
 
   public async delete(req: Request, res: Response) {
     const token = req.headers.authorization;
-    const { id } = req.params;
+    const { tweetId } = req.params;
 
     try {
       const findTweet = await prisma.tweets.findUnique({
         where: {
-          id,
+          id: tweetId,
         },
       });
 
@@ -126,30 +134,29 @@ class TweetController {
       if (!user) {
         return res.status(400).json({ success: false, msg: "User not found." });
       }
-
-      const tweet = await prisma.tweets.findFirst({
+      const reply = await prisma.replies.findFirst({
         where: {
-          id,
+          tweetId,
           AND: {
             userId: user.id,
           },
         },
       });
-      if (!tweet) {
+      if (!reply) {
         return res
           .status(400)
-          .json({ success: false, msg: "This tweet is not from this user." });
+          .json({ success: false, msg: "This reply is not from this user." });
       }
 
-      await prisma.tweets.delete({
+      await prisma.replies.delete({
         where: {
-          id: tweet.id,
+          id: reply.id,
         },
       });
 
       return res.status(200).json({
         success: true,
-        msg: "Tweet deleted.",
+        msg: "Reply deleted.",
       });
     } catch (error) {
       console.log(error);
@@ -158,4 +165,4 @@ class TweetController {
   }
 }
 
-export default TweetController;
+export default ReplyController;

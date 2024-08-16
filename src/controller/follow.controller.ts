@@ -115,7 +115,9 @@ class FollowController {
       const follow = await prisma.follows.findFirst({
         where: {
           userId: user.id,
-          followId: following.id,
+          AND: {
+            followId: following.id,
+          },
         },
       });
       if (!follow) {

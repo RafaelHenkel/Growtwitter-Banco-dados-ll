@@ -62,11 +62,6 @@ class LikeController {
           tweet: {
             select: {
               content: true,
-              _count: {
-                select: {
-                  likes: true,
-                },
-              },
             },
           },
         },
@@ -102,11 +97,16 @@ class LikeController {
           token,
         },
       });
+      if (!user) {
+        return res.status(400).json({ success: false, msg: "User not found." });
+      }
 
       const like = await prisma.likes.findFirst({
         where: {
           tweetId,
-          userId: user?.id,
+          AND: {
+            userId: user.id,
+          },
         },
       });
 
@@ -118,7 +118,7 @@ class LikeController {
 
       await prisma.likes.delete({
         where: {
-          id: like?.id,
+          id: like.id,
         },
       });
 

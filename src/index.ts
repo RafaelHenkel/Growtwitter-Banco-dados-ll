@@ -5,6 +5,7 @@ import loginRoutes from "./routes/login.routes";
 import tweetsRoutes from "./routes/tweets.routes";
 import likesRoutes from "./routes/likes.routes";
 import followsRoutes from "./routes/follows.routes";
+import repliesRoutes from "./routes/replies.routes";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use("/login", loginRoutes());
 app.use("/tweets", tweetsRoutes());
 app.use("/likes", likesRoutes());
 app.use("/follows", followsRoutes());
+app.use("/replies", repliesRoutes());
 
 const port = process.env.PORT;
 

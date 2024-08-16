@@ -49,7 +49,9 @@ model Tweets{
   user Users @relation(fields: [userId], references: [id])
 
   likes Likes[]
-  replies Replies[]
+  replies Replies[] @relation("replies")
+  repliesReference Replies? @relation("reference")
+
 
   createdAt DateTime @default(now()) @map("created_at") 
 	uptatedAt DateTime @updatedAt @map("updated_at") 
@@ -70,24 +72,27 @@ model Likes{
 }
 
 model Replies{
-   id String @id @default(uuid()) @db.Uuid 
+  id String @id @default(uuid()) @db.Uuid 
 
   userId String @db.Uuid @map("user_id")
   user Users @relation(fields: [userId], references: [id])
 
   tweetId String @db.Uuid @map("tweets_id")
-  tweet Tweets @relation(fields: [tweetId], references: [id])
+  tweet Tweets @relation(name: "replies", fields: [tweetId], references: [id], map: "tweets_id")
+
+  referenceId String @db.Uuid @map("reference_id") @unique
+  reference Tweets @relation(name: "reference", fields: [referenceId], references: [id])
+
 
   @@map("replies")
 }
 
 model Follows{
-id String @id @default(uuid()) @db.Uuid 
+  id String @id @default(uuid()) @db.Uuid 
 
 //SEGUINDO
   userId String @db.Uuid @map("user_id")
-  user Users @relation(name: "following" ,fields: [userId], references: [id])
-
+  user Users @relation(name: "following" , fields: [userId], references: [id])
 
 //SEGUIDORES
   followId String @db.Uuid @map("follow_id")
