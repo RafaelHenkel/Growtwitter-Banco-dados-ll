@@ -6,11 +6,13 @@ import tweetsRoutes from "./routes/tweets.routes";
 import likesRoutes from "./routes/likes.routes";
 import followsRoutes from "./routes/follows.routes";
 import repliesRoutes from "./routes/replies.routes";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.use("/users", userRoutes());
 app.use("/login", loginRoutes());
