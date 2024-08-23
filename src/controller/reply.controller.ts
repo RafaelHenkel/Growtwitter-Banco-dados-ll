@@ -154,6 +154,12 @@ class ReplyController {
         },
       });
 
+      await prisma.tweets.delete({
+        where: {
+          id: tweetId,
+        },
+      });
+
       return res.status(200).json({
         success: true,
         msg: "Reply deleted.",

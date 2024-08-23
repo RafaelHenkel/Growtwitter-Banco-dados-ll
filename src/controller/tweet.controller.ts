@@ -66,10 +66,36 @@ class TweetController {
   }
 
   public async update(req: Request, res: Response) {
+    const token = req.headers.authorization;
     const { id } = req.params;
     const { content } = req.body;
 
     try {
+      const user = await prisma.users.findFirst({
+        where: {
+          token,
+        },
+      });
+
+      if (!user) {
+        return res.status(400).json({ success: false, msg: "User not found." });
+      }
+
+      const tweet = await prisma.tweets.findFirst({
+        where: {
+          id,
+          AND: {
+            userId: user.id,
+          },
+        },
+      });
+
+      if (!tweet) {
+        return res
+          .status(400)
+          .json({ success: false, msg: "This tweet is not from this user." });
+      }
+
       const findTweet = await prisma.tweets.findUnique({
         where: {
           id,
@@ -81,7 +107,7 @@ class TweetController {
           .json({ success: false, msg: "Tweet not found." });
       }
 
-      const tweet = await prisma.tweets.update({
+      const tweetUpdate = await prisma.tweets.update({
         where: {
           id,
         },
@@ -93,7 +119,7 @@ class TweetController {
       return res.status(200).json({
         success: true,
         msg: "Tweet updated.",
-        data: tweet,
+        data: tweetUpdate,
       });
     } catch (error) {
       console.log(error);
@@ -135,6 +161,7 @@ class TweetController {
           },
         },
       });
+
       if (!tweet) {
         return res
           .status(400)
